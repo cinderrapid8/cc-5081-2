@@ -154,10 +154,12 @@ export type ValidationCode =
   | 'duplicate-modifier'
   | 'unknown-source'
   | 'unknown-attribute'
+  | 'unknown-operator'
   | 'missing-dependency'
   | 'unconsumed-modifier'
   | 'invalid-source-kind'
   | 'invalid-number'
+  | 'malformed-document'
   | 'dependency-cycle';
 
 export interface ValidationIssue {

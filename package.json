@@ -7,10 +7,13 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "node scripts/build.mjs",
-    "test": "npm run build && tsx --test tests/*.test.ts",
-    "test:unit": "tsx --test tests/*.test.ts",
+    "test": "npm run build && tsx --test tests/*.test.ts tests/rule-service/*.test.ts",
+    "test:unit": "tsx --test tests/*.test.ts tests/rule-service/*.test.ts",
     "scenarios": "tsx scripts/scenarios.ts",
-    "start": "node scripts/serve.mjs"
+    "start": "node scripts/serve.mjs",
+    "service": "node dist/service/rule-service.mjs",
+    "service:selftest": "RULES_DIR=dist/service/rules STATE_FILE=state/self-check.jsonl SELF_CHECK_ONLY=1 node dist/service/rule-service.mjs",
+    "deploy:check": "node deploy/self-check.mjs"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",

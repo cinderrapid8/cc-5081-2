@@ -1,0 +1,415 @@
+{
+  "version": "v2",
+  "label": "调参规则集（护盾换算与攻坚数值更新）",
+  "createdAt": "2026-11-12T06:00:00.000Z",
+  "initialLoadoutId": "field",
+  "rules": [
+    {
+      "id": "maxHp",
+      "label": "生命上限",
+      "description": "装备与场景先修正，最终钳位到 1..99999。护盾容量依赖它。",
+      "pipeline": [
+        "addBase",
+        "addFlat",
+        "multiplyPercent",
+        "addDerived",
+        "applyOverride",
+        "clamp"
+      ],
+      "clamp": {
+        "min": 1,
+        "max": 99999
+      },
+      "precision": 3
+    },
+    {
+      "id": "attack",
+      "label": "攻击力",
+      "description": "基础 120，装备与增益按固定值/百分比修正。",
+      "pipeline": [
+        "addBase",
+        "addFlat",
+        "multiplyPercent",
+        "addDerived",
+        "applyOverride",
+        "clamp"
+      ],
+      "clamp": {
+        "min": 0,
+        "max": 5000
+      },
+      "precision": 3
+    },
+    {
+      "id": "defense",
+      "label": "防御",
+      "description": "受场景压制影响，钳位到 0..2000。",
+      "pipeline": [
+        "addBase",
+        "addFlat",
+        "multiplyPercent",
+        "addDerived",
+        "applyOverride",
+        "clamp"
+      ],
+      "clamp": {
+        "min": 0,
+        "max": 2000
+      },
+      "precision": 3
+    },
+    {
+      "id": "shieldCapacity",
+      "label": "护盾容量",
+      "description": "由生命上限派生：上限 × 0.35 + 40。",
+      "pipeline": [
+        "addBase",
+        "addFlat",
+        "multiplyPercent",
+        "addDerived",
+        "applyOverride",
+        "clamp"
+      ],
+      "clamp": {
+        "min": 0,
+        "max": 40000
+      },
+      "precision": 3
+    },
+    {
+      "id": "shieldRegen",
+      "label": "护盾再生",
+      "description": "由护盾容量派生，形成 maxHp → shieldCapacity → shieldRegen 链。",
+      "pipeline": [
+        "addBase",
+        "addFlat",
+        "multiplyPercent",
+        "addDerived",
+        "applyOverride",
+        "clamp"
+      ],
+      "clamp": {
+        "min": 0,
+        "max": 5000
+      },
+      "precision": 3
+    },
+    {
+      "id": "moveSpeed",
+      "label": "移动速度",
+      "description": "负倍率与覆盖修正的演示属性。",
+      "pipeline": [
+        "addBase",
+        "addFlat",
+        "multiplyPercent",
+        "addDerived",
+        "applyOverride",
+        "clamp"
+      ],
+      "clamp": {
+        "min": 10,
+        "max": 400
+      },
+      "precision": 3
+    },
+    {
+      "id": "precision",
+      "label": "命中精度",
+      "description": "展示同类覆盖修正的优先级竞争。",
+      "pipeline": [
+        "addBase",
+        "addFlat",
+        "multiplyPercent",
+        "addDerived",
+        "applyOverride",
+        "clamp"
+      ],
+      "clamp": {
+        "min": 0,
+        "max": 200
+      },
+      "precision": 3
+    }
+  ],
+  "character": {
+    "id": "character",
+    "name": "巡林客",
+    "baseSource": {
+      "id": "character.base",
+      "kind": "base",
+      "label": "角色基础面板"
+    },
+    "baseModifiers": [
+      {
+        "id": "base.maxHp",
+        "sourceId": "character.base",
+        "attribute": "maxHp",
+        "op": "base",
+        "value": 820
+      },
+      {
+        "id": "base.attack",
+        "sourceId": "character.base",
+        "attribute": "attack",
+        "op": "base",
+        "value": 120
+      },
+      {
+        "id": "base.defense",
+        "sourceId": "character.base",
+        "attribute": "defense",
+        "op": "base",
+        "value": 240
+      },
+      {
+        "id": "base.moveSpeed",
+        "sourceId": "character.base",
+        "attribute": "moveSpeed",
+        "op": "base",
+        "value": 180
+      },
+      {
+        "id": "base.precision",
+        "sourceId": "character.base",
+        "attribute": "precision",
+        "op": "base",
+        "value": 72
+      },
+      {
+        "id": "base.shieldCapacity",
+        "sourceId": "character.base",
+        "attribute": "shieldCapacity",
+        "op": "base",
+        "value": 0
+      },
+      {
+        "id": "base.shieldRegen",
+        "sourceId": "character.base",
+        "attribute": "shieldRegen",
+        "op": "base",
+        "value": 0
+      }
+    ]
+  },
+  "system": {
+    "sources": [
+      {
+        "id": "system.hpToShield",
+        "kind": "derived",
+        "label": "生命上限→护盾换算"
+      },
+      {
+        "id": "system.shieldToRegen",
+        "kind": "derived",
+        "label": "护盾容量→再生换算"
+      }
+    ],
+    "modifiers": [
+      {
+        "id": "derive.shieldCapacity.maxHp",
+        "sourceId": "system.hpToShield",
+        "attribute": "shieldCapacity",
+        "op": "derive",
+        "value": 0.4,
+        "offset": 25,
+        "dependsOn": [
+          "maxHp"
+        ]
+      },
+      {
+        "id": "derive.shieldRegen.shieldCapacity",
+        "sourceId": "system.shieldToRegen",
+        "attribute": "shieldRegen",
+        "op": "derive",
+        "value": 0.1,
+        "offset": 10,
+        "dependsOn": [
+          "shieldCapacity"
+        ]
+      }
+    ]
+  },
+  "loadouts": [
+    {
+      "id": "field",
+      "label": "野外载荷",
+      "description": "轻甲 + 短刃，适合长线探索。",
+      "sources": [
+        {
+          "id": "loadout.field.armor",
+          "kind": "equipment",
+          "label": "游侠轻甲"
+        },
+        {
+          "id": "loadout.field.blade",
+          "kind": "equipment",
+          "label": "林间短刃"
+        },
+        {
+          "id": "loadout.field.weather",
+          "kind": "pressure",
+          "label": "雨季湿地（压制）"
+        }
+      ],
+      "modifiers": [
+        {
+          "id": "field.armor.defense",
+          "sourceId": "loadout.field.armor",
+          "attribute": "defense",
+          "op": "flat",
+          "value": 85
+        },
+        {
+          "id": "field.armor.maxHp",
+          "sourceId": "loadout.field.armor",
+          "attribute": "maxHp",
+          "op": "percent",
+          "value": 0.08
+        },
+        {
+          "id": "field.blade.attack.flat",
+          "sourceId": "loadout.field.blade",
+          "attribute": "attack",
+          "op": "flat",
+          "value": 46
+        },
+        {
+          "id": "field.blade.attack.percent",
+          "sourceId": "loadout.field.blade",
+          "attribute": "attack",
+          "op": "percent",
+          "value": 0.12
+        },
+        {
+          "id": "field.weather.moveSpeed",
+          "sourceId": "loadout.field.weather",
+          "attribute": "moveSpeed",
+          "op": "percent",
+          "value": -0.25
+        },
+        {
+          "id": "field.weather.attack",
+          "sourceId": "loadout.field.weather",
+          "attribute": "attack",
+          "op": "percent",
+          "value": -0.1
+        }
+      ]
+    },
+    {
+      "id": "siege",
+      "label": "攻坚载荷",
+      "description": "重甲与攻城锤，同时被沙暴场景压制。",
+      "sources": [
+        {
+          "id": "loadout.siege.armor",
+          "kind": "equipment",
+          "label": "攻城重甲"
+        },
+        {
+          "id": "loadout.siege.hammer",
+          "kind": "equipment",
+          "label": "攻城锤"
+        },
+        {
+          "id": "loadout.siege.weather",
+          "kind": "pressure",
+          "label": "沙暴场景（压制）"
+        }
+      ],
+      "modifiers": [
+        {
+          "id": "siege.armor.defense",
+          "sourceId": "loadout.siege.armor",
+          "attribute": "defense",
+          "op": "flat",
+          "value": 245
+        },
+        {
+          "id": "siege.armor.maxHp",
+          "sourceId": "loadout.siege.armor",
+          "attribute": "maxHp",
+          "op": "percent",
+          "value": 0.22
+        },
+        {
+          "id": "siege.hammer.attack.flat",
+          "sourceId": "loadout.siege.hammer",
+          "attribute": "attack",
+          "op": "flat",
+          "value": 130
+        },
+        {
+          "id": "siege.hammer.attack.percent",
+          "sourceId": "loadout.siege.hammer",
+          "attribute": "attack",
+          "op": "percent",
+          "value": -0.18
+        },
+        {
+          "id": "siege.weather.moveSpeed",
+          "sourceId": "loadout.siege.weather",
+          "attribute": "moveSpeed",
+          "op": "percent",
+          "value": -0.45
+        },
+        {
+          "id": "siege.weather.precision",
+          "sourceId": "loadout.siege.weather",
+          "attribute": "precision",
+          "op": "percent",
+          "value": -0.3
+        },
+        {
+          "id": "siege.weather.override.precision",
+          "sourceId": "loadout.siege.weather",
+          "attribute": "precision",
+          "op": "override",
+          "value": 30,
+          "priority": 10
+        }
+      ]
+    }
+  ],
+  "effects": [
+    {
+      "id": "effect.frenzy",
+      "label": "战意激涌",
+      "description": "攻击 +18%，持续 2 回合。",
+      "kind": "buff",
+      "durationTicks": 2,
+      "modifiers": [
+        {
+          "id": "frenzy.attack",
+          "sourceId": "effect.frenzy",
+          "attribute": "attack",
+          "op": "percent",
+          "value": 0.18
+        }
+      ]
+    },
+    {
+      "id": "effect.fortify",
+      "label": "壁垒强化",
+      "description": "生命上限固定 +140，防御 +60，持续 4 回合。",
+      "kind": "buff",
+      "durationTicks": 4,
+      "modifiers": [
+        {
+          "id": "fortify.maxHp",
+          "sourceId": "effect.fortify",
+          "attribute": "maxHp",
+          "op": "flat",
+          "value": 140
+        },
+        {
+          "id": "fortify.defense",
+          "sourceId": "effect.fortify",
+          "attribute": "defense",
+          "op": "flat",
+          "value": 60
+        }
+      ]
+    }
+  ]
+}

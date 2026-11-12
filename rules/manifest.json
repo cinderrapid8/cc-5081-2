@@ -1,0 +1,15 @@
+{
+  "activeVersion": "v1",
+  "versions": [
+    {
+      "version": "v1",
+      "file": "v1/rules.json",
+      "summary": "初始规则集：护盾=生命上限×0.35+40，再生=护盾×0.12+6"
+    },
+    {
+      "version": "v2",
+      "file": "v2/rules.json",
+      "summary": "调参规则集：护盾=生命上限×0.40+25，再生=护盾×0.10+10，攻坚防御+25"
+    }
+  ]
+}
